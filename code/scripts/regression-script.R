@@ -62,6 +62,7 @@ png("../images/scatterplot-tv-sales.png")
 plot(x = advertising$TV, y = advertising$Sales, 
      xlab = "TV Advertising Budgets (in thousands of dollars)", 
      ylab = "Sales (in thousands of product units)")
+abline(sales_tv_reg)
 dev.off()
 
 # Scatterplot of Radio, Sales
@@ -69,6 +70,7 @@ png("../images/scatterplot-radio-sales.png")
 plot(x = advertising$Radio, y = advertising$Sales, 
      xlab = "Radio Advertising Budgets (in thousands of dollars)", 
      ylab = "Sales (in thousands of product units)")
+abline(sales_radio_reg)
 dev.off()
 
 # Scatterplot of Newspaper, Sales
@@ -76,6 +78,7 @@ png("../images/scatterplot-newspaper-sales.png")
 plot(x = advertising$Newspaper, y = advertising$Sales, 
      xlab = "Newspaper Advertising Budgets (in thousands of dollars)", 
      ylab = "Sales (in thousands of product units)")
+abline(sales_np_reg)
 dev.off()
 
 # Residual plot
