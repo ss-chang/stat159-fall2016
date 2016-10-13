@@ -8,13 +8,33 @@ advertising <- read.csv(file = "../data/Advertising.csv", row.names = 1)
 # ==============================================================================
 # Regression analysis
 # ==============================================================================
-# Regression object
-reg <- lm(Sales ~ TV + Radio + Newspaper, data = advertising)
-reg
+# Regression objects
+# Sales on TV
+sales_tv_reg <- lm(Sales ~ TV, data = advertising)
 
-# Summary
-regsum <- summary(reg)
-regsum
+# Sales on Radio
+sales_radio_reg <- lm(Sales ~ Radio, data = advertising)
+
+
+# Sales on Newspaper
+sales_np_reg <- lm(Sales ~ Newspaper, data = advertising)
+
+# Multiple Regression
+multi_reg <- lm(Sales ~ TV + Radio + Newspaper, data = advertising)
+
+
+# Summaries
+# Sales on TV
+sales_tv_sum <- summary(sales_tv_reg)
+
+# Sales on Radio
+sales_radio_sum <- summary(sales_radio_reg)
+
+# Sales on Newspaper
+sales_np_sum <- summary(sales_np_reg)
+
+# Multiple Regression
+multi_sum <- summary(multi_reg)
 
 
 
@@ -22,7 +42,15 @@ regsum
 # Generating regression.RData
 # ==============================================================================
 # Output file
-save(reg, regsum, file = '../data/regression.RData')
+save(sales_tv_reg,
+     sales_radio_reg,
+     sales_np_reg,
+     multi_reg, 
+     sales_tv_sum, 
+     sales_radio_sum, 
+     sales_np_sum, 
+     multi_sum,
+     file = '../data/regression.RData')
 
 
 
@@ -31,15 +59,15 @@ save(reg, regsum, file = '../data/regression.RData')
 # ==============================================================================
 # Residual plot
 png("../images/residual-plot.png")
-plot(reg, which = c(1))
+plot(multi_reg, which = c(1))
 dev.off()
 
 # Scale location plot
 png("../images/scale-location-plot.png")
-plot(reg, which = c(3))
+plot(multi_reg, which = c(3))
 dev.off()
 
 # Normal qq plot
 png("../images/normal-qq-plot.png")
-plot(reg, which = c(2))
+plot(multi_reg, which = c(2))
 dev.off()
