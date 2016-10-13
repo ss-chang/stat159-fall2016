@@ -1,10 +1,8 @@
-
-
 # Declare phony target
-.PHONY: all eda regression
+.PHONY: all eda regression session
 
 # all	
-all: data eda regression
+all: eda regression
 
 
 
@@ -24,5 +22,9 @@ eda :
 # Perform regression analyses
 regression :
 	cd code/scripts; Rscript -e 'source("regression-script.R")'
+
+# Generate session information
+session :
+	cd code/scripts; Rscript -e 'source("session-info-script.R")'
 
 
