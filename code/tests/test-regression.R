@@ -1,9 +1,11 @@
 # ==============================================================================
 # Load source code for functions and relevant data to be tested
 # ==============================================================================
+library(testthat)
+library(readr)
+advertising <- read.csv(file = "../data/Advertising.csv", row.names = 1)
 source("../functions/regression-functions.R")
 load("../data/regression.RData")
-library(testthat)
 
 
 
