@@ -1,5 +1,5 @@
 # Declare phony target
-.PHONY: all eda regression session
+.PHONY: all eda regression session tests
 
 # all	
 all: eda regression
@@ -13,8 +13,6 @@ all: eda regression
 data : 
 	cd code/data; curl http://www-bcf.usc.edu/~gareth/ISL/Advertising.csv >> Advertising.csv
 
-
-
 # Perform exploratory data analysis
 eda : 
 	cd code/scripts; Rscript -e 'source("eda-script.R")'
@@ -26,5 +24,9 @@ regression :
 # Generate session information
 session :
 	cd code/scripts; Rscript -e 'source("session-info-script.R")'
+
+# Execute unit tests on regression functions
+tests: 
+	Rscript -e 'source("test-that.R")'
 
 
