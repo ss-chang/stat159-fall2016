@@ -3,6 +3,7 @@
 # ==============================================================================
 library(readr)
 library(testthat)
+library(xtable)
 
 # ==============================================================================
 # Generating session-info.txt
@@ -22,6 +23,6 @@ cat("Operating System: OS X El Capitan, Version 10.11.6\n")
 
 cat("R Version: 3.3.1 (2016-06-21) Bug in Your Hair\n")
 
-cat("Packages Used: readr, testthat")
+cat("Packages Used: readr, testthat, xtable")
 
 sink()
