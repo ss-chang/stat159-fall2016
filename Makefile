@@ -1,11 +1,8 @@
 # Declare phony target
-.PHONY: all eda regression session tests
+.PHONY: all eda regression session tests report clean
 
 # all	
-all: eda regression
-
-
-
+all: eda regression report
 
 
 
@@ -28,5 +25,13 @@ session :
 # Execute unit tests on regression functions
 tests: 
 	Rscript -e 'source("test-that.R")'
+
+# Generate report.pdf file
+report:
+	cd code/report; Rscript -e "library(rmarkdown); render('report.Rmd', 'pdf_document')"
+
+# Clean output file
+clean:
+	cd code/report; rm -f report.pdf
 
 
