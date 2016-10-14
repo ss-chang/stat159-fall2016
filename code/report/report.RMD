@@ -1,0 +1,103 @@
+---
+title: Regression Analysis on the Relationship Between Advertising Budgets and Product
+  Sales
+author: "Shannon Chang"
+date: "October 14, 2016"
+output: pdf_document
+---
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+library(xtable)
+library(png)
+library(grid)
+library(gridExtra)
+load("../data/regression.RData")
+load("../data/correlation-matrix.RData")
+```
+
+
+## Abstract
+
+## Introduction
+
+## Data
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+tv <- rasterGrob(as.raster(readPNG("../images/histogram-tv.png")), interpolate = FALSE)
+radio <- rasterGrob(as.raster(readPNG("../images/histogram-radio.png")), interpolate = FALSE)
+
+grid.arrange(tv, 
+             radio, 
+             ncol = 2)
+
+np <- rasterGrob(as.raster(readPNG("../images/histogram-newspaper.png")), interpolate = FALSE)
+sales <- rasterGrob(as.raster(readPNG("../images/histogram-sales.png")), interpolate = FALSE)
+
+grid.arrange(np, 
+             sales, 
+             ncol = 2)
+```
+
+```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+tv_sales <- readPNG("../images/scatterplot-tv-sales.png")
+grid.raster(tv_sales)
+```
+
+```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+radio_sales <- readPNG("../images/scatterplot-radio-sales.png")
+grid.raster(radio_sales)
+```
+
+```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+np_sales <- readPNG("../images/scatterplot-newspaper-sales.png")
+grid.raster(np_sales)
+```
+
+```{r, eval = TRUE, echo = FALSE, fig.width = 6, fig.height = 6, fig.align='center'}
+matrix <- readPNG("../images/scatterplot-matrix.png")
+grid.raster(matrix)
+```
+
+```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+residual <- readPNG("../images/residual-plot.png")
+grid.raster(residual)
+```
+
+```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+scale_location <- readPNG("../images/scale-location-plot.png")
+grid.raster(scale_location)
+```
+
+```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+normal_qq <- readPNG("../images/normal-qq-plot.png")
+grid.raster(normal_qq)
+```
+
+## Methodology
+
+## Results
+```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
+sales_tv <- xtable(sales_tv_sum$coefficients, 
+                      digits = c(0, 3, 3, 2, 4), 
+                      caption = c("Coefficient Estimates from the Simple Regression of Sales on TV"))
+print.xtable(sales_tv, comment = FALSE, caption.placement = "top")
+
+sales_radio <- xtable(sales_radio_sum$coefficients, 
+                      digits = c(0, 3, 3, 2, 4), 
+                      caption = c("Coefficient Estimates from the Simple Regression of Sales on Radio"))
+print.xtable(sales_radio, comment = FALSE, caption.placement = "top")
+
+sales_newspaper <- xtable(sales_np_sum$coefficients, 
+                      digits = c(0, 3, 3, 2, 4), 
+                      caption = c("Coefficient Estimates from the Simple Regression of Sales on Newspaper"))
+print.xtable(sales_newspaper, comment = FALSE, caption.placement = "top")
+
+multi <- xtable(multi_sum$coefficients, 
+                      digits = c(0, 3, 3, 2, 4), 
+                      caption = c("Least Squares Coefficient Estimates from the Multiple Linear Regression of Sales on TV, Radio, and Newspaper"))
+print.xtable(sales_radio, comment = FALSE, caption.placement = "top")
+
+cor_table <- xtable(adv_cor, 
+                    caption = "Correlation Matrix")
+print.xtable(cor_table, comment = FALSE, caption.placement = "top")
+```
+
+## Conclusions
