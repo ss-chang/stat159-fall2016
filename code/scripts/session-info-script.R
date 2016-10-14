@@ -4,6 +4,10 @@
 library(readr)
 library(testthat)
 library(xtable)
+library(png)
+library(grid)
+library(gridExtra)
+library(rmarkdown)
 
 # ==============================================================================
 # Generating session-info.txt
@@ -23,6 +27,6 @@ cat("Operating System: OS X El Capitan, Version 10.11.6\n")
 
 cat("R Version: 3.3.1 (2016-06-21) Bug in Your Hair\n")
 
-cat("Packages Used: readr, testthat, xtable")
+cat("Packages Used: readr, testthat, xtable, png, grid, gridExtra, rmarkdown")
 
 sink()
