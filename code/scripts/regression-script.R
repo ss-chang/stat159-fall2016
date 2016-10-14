@@ -1,6 +1,7 @@
 # ==============================================================================
 # Read in Advertising.csv data set
 # ==============================================================================
+library(readr)
 advertising <- read.csv(file = "../data/Advertising.csv", row.names = 1)
 
 
