@@ -1,0 +1,2 @@
+load("/Users/Shannon/Desktop/RCSDS/hw03/code/data/regression.RData")
+sales_tv_sum
