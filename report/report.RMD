@@ -1,0 +1,347 @@
+---
+title: Regression Analysis on the Relationship Between Advertising Budgets and Product
+  Sales
+author: "Shannon Chang"
+date: "October 14, 2016"
+output: pdf_document
+---
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+library(xtable)
+library(png)
+library(grid)
+library(gridExtra)
+load("../data/regression.RData")
+load("../data/correlation-matrix.RData")
+```
+
+
+
+# Abstract
+In this report, I will reproduce the multiple linear regression analysis detailed 
+in Chapter 3 of Gareth James, Daniela Witten, Trevor Hastie, and Robert Tibshirani's 
+[_An Introduction to Statistical Learning_](http://www-bcf.usc.edu/~gareth/ISL/ISLR%20First%20Printing.pdf). 
+The analysis is carried out on the 
+[`Advertising.csv`](http://www-bcf.usc.edu/~gareth/ISL/Advertising.csv) dataset 
+that is paired with the textbook, and contains data on product sales in over two 
+hundred different markets along with the advertising budgets for the product in 
+each market by different mediums: `TV`, `Radio`, and `Newspaper`.  
+  
+Specifically, I will reproduce:  
+* __Table 3.1__ (page 72) - Coefficient estimates of simple linear regression 
+models of `Sales` on `TV`, `Sales` on `Radio`, and `Sales` on `Newspaper`  
+* __Table 3.4__ (page 74) - Least squares coefficient estimates of the multiple 
+linear regression model of `Sales` on `TV`, `Radio`, and `Newspaper`  
+* __Table 3.5__ (page 75) - A correlation matrix for `TV`, `Radio`, `Newspaper`, and 
+`Sales`  
+* __Table 3.6__ (page 76) - $RSE$, $R^2$, and $F-statistic$ values from the least 
+squares model for the regression of `Sales` on `TV`, `Radio`, and `Newspaper`
+
+
+
+
+
+# Introduction
+Suppose a company wants advice on how to increase sales for one of its products. 
+There is, of course, no concrete way to insure increased sales, but we can 
+influence greater sales through advertising. Imagine that we are statistical 
+consultants hired for this project. To convince the company to invest in 
+advertising campaigns, we must first prove to the company that there is a 
+relationship between advertising budget and sales. From here, we can then advise 
+the company on appropriate budgets to better reach sales targets. Thus, 
+the goal for this analysis is to determine whether there is a relationship 
+between advertising budget and sales and, if so, how strong the relationship is 
+between the two. Given that there is a relationship between advertising budget and 
+sales, we would want to construct an accurate model that can be utilized to predict 
+sales based on the size of advertising budget. There are three mediums detailed in 
+`Advertising.csv`: `TV`, `Radio`, and `Newspaper`, so we will examine their individual 
+relationships with `Sales` and then their combined relationship with `Sales`. 
+
+
+
+
+
+# Data
+The `Advertising.csv` dataset consists of advertising budgets (in thousands of 
+dollars) by medium: `TV`, `Radio`, and `Newspaper`. Product sales (in thousands
+of units) are listed under `Sales`. There are 200 rows of data, indicating 200 
+different markets. A very general overview of the distribution for each column of data 
+can be seen in the histograms below:   
+Histograms for the two columns are shown below:  
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+tv <- rasterGrob(as.raster(readPNG("../images/histogram-tv.png")), interpolate = FALSE)
+radio <- rasterGrob(as.raster(readPNG("../images/histogram-radio.png")), interpolate = FALSE)
+
+grid.arrange(tv, 
+             radio, 
+             ncol = 2)
+
+np <- rasterGrob(as.raster(readPNG("../images/histogram-newspaper.png")), interpolate = FALSE)
+sales <- rasterGrob(as.raster(readPNG("../images/histogram-sales.png")), interpolate = FALSE)
+
+grid.arrange(np, 
+             sales, 
+             ncol = 2)
+```
+
+
+
+
+
+# Methodology
+## Setting Up a Model
+To examine the association between `Sales` and `TV`, `Radio`, and `Newspaper`, whether 
+individually or altogether, we model the relationship by _linear regression_. For the 
+association with `Sales` and the advertising budget for each medium, we would model the 
+relationship by _simple linear regression_. For the association between `Sales` and 
+all three mediums, we would model the relationship by _multiple linear regression_. 
+
+### Simple Linear Regression 
+This method involves predicting a quantitative response $Y$, based on the predictor 
+variable $X$. For the association between `Sales` and the advertising budget for each 
+medium, we would model the relationships as:  
+$$Sales = \beta_0 + \beta_1TV$$  
+$$Sales = \beta_0 + \beta_1Radio$$  
+$$Sales = \beta_0 + \beta_1Newspaper$$  
+Here, Here, $\beta_0$ represents the intercept of the linear model while $\beta_1$ 
+represents the slope.  
+  
+Since all $\beta_0$ and $\beta_1$ are unknown for each association, we would need to 
+calculate estimates for the their coefficients instead. In a visual sense, we would 
+want to graph all the data for `TV` and `Sales` and fit a line 
+$Sales = \beta_0 + \beta_1TV$ as close as possible to our 200 data points. We would 
+repeat this process for `Radio` and `Newspaper` as well. Then, we can optimize the 
+fit of each line using the _least squares criterion_. This involves minimizing the _residual sum of squares_; a _residual_ is the distance between each data point and its predicted value from the linear model). The linear model/line that we fit would be based on an average of the squares.  
+  
+From a computational perspective, we can start fitting the line by calculating
+estimates $\hat{\beta_0}$ and $\hat{\beta_1}$ for $\beta_0$ and $\beta_1$. 
+$\hat{\beta_0}$ and $\hat{\beta_1}$ are chosen to minimize the aforementioned 
+_residual sum of squares_ (_RSS_), which is given by the equation: 
+$$RSS = (y_1 - \hat{\beta_0} - \hat{\beta_1}x_1)^2 + (y_2 - \hat{\beta_0} - \hat{\beta_1}x_2)^2 + ... + (y_n - \hat{\beta_0} - \hat{\beta_1}x_n)^2$$
+$\hat{\beta_0}$ and $\hat{\beta_1}$, in turn, are shown through caculus derivation 
+as: 
+$$\hat{\beta_0} = \bar{y} - \hat{\beta_1}\bar{x}$$
+$$\hat{\beta_1} = \frac{\sum(x_i-\bar{x})(y_i - \bar{y})}{\sum(x_i-\bar{x})^2}$$ 
+Here, $\bar{x}$ is the mean of `TV` (or `Radio` or `Newspaper`), while $\bar{y}$ 
+is the mean of `Sales`. 
+
+To evaluate the accuracy of these estimates, we start by calculating standard errors 
+of the standard means. We can then use these standard errors to perform 
+_hypothesis tests_ on the estimates. Thus, we would be testing the _null hypothesis_ 
+that $$H_0: There\: is\: no\: relationship\: between\: TV\:  and\:  Sales$$ versus 
+the _alternative hypothesis_ that 
+$$H_1: There\: is\: some\: relationship\: between\: TV\: and\: Sales$$   
+Here, _TV_ can be substituted with _Radio_ and _Newspaper_.  
+  
+Numerically, we would be testing $$H_0: \beta_1 = 0$$ versus 
+$$H_0: \beta_1 \neq 0$$  
+To do so, we would calculate a _t-statistic_:
+$$t = \frac{\hat{\beta_1} - 0}{SE(\hat{\beta_1})}$$ 
+This measures the number of standard deviations that our estimate for $\beta_1$ is 
+away from 0.  
+  
+From this, we can calculate a _p-value_, which is the probability of observing 
+any value greater than or equal to |_t_|. A small p-value would indicate that it 
+is unlikely to observe a meaningful association between the predictor (`TV`, or 
+`Radio`, or `Newspaper`) and the response (`Sales`) purely by chance without some 
+true relationship between the two. Thus, a small p-value would allow us to 
+_reject the null hypothesis_ and determine that there is a relationship between 
+`TV` (or `Radio` or `Newspaper`) and `Sales`. In general, 5% or 1% are used 
+as p-value benchmarks. 
+
+### Muliple Linear Regression
+This method is, in many ways, similar to __simple linear regression__, but with the 
+added complexity of more variables. We start by predicting a quantitative response 
+$Y$, based on the predictor variables $X_1$, $X_2$, and $X_3$. For the combined 
+association between `Sales` and `TV`, `Radio`, and `Newspaper`, we would model this 
+relationship as: 
+$$Sales = \beta_0 + \beta_1TV + \beta_2Radio + \beta_3Newspaper$$  
+Here, Here, $\beta_0$ represents the intercept of the linear model while $\beta_1$, 
+$\beta_2$, and $\beta_3$ represent the three different slopes. Each $\beta_j$ can 
+be interpreted as 
+*the average effect on $Y$ of a one unit increase in $X_j$, holding all other predictors fixed*.Note that fitting three simple linear regressions is not the same as fitting one 
+multiple linear regression for `Sales`, because the each simple linear regression would 
+not take into account the effects of the other two mediums and, subsequently, any 
+interaction effects.  
+  
+Visualizing this model is a complicated matter, as each additional predictor adds 
+another dimension to the graph. But much like in the _simple linear regression_, we 
+are once again trying the minimize the sum of squared residuals, this this time 
+with an expanded formulation: 
+$$
+\begin{aligned}
+  RSS &= \sum_{i=1}^{n} (y_i - \hat{y_i})^2 \\
+  &= \sum_{i=1}^{n} (y_i - \hat{\beta_0} - \hat{\beta_1}x_{i1} - \hat{\beta_p}x_{i3}) 
+\end{aligned}
+$$ 
+The coefficient estimates of $\hat{\beta_0}$, $\hat{\beta_1}$, $\hat{\beta_2}$, and 
+$\hat{\beta_3}$ are derived more complicatedly through matrix algebra and will not 
+be listed here. 
+  
+Hypothesis testing for similar to that conducted for _simple linear regression_ can 
+also be conducted by _multiple linear regression_. The calculated results, however, 
+will change because of the way in which $\hat{\beta_0}$, $\hat{\beta_1}$, 
+$\hat{\beta_2}$, and $\hat{\beta_3}$ are calculated. Hence, results of a hypothesis 
+test conducted from the _multiple linear regression_, say for `Sales` and `TV` could 
+have different results compared to a hypothesis conducted from a 
+_simple linear regression_ for the same variables.  
+  
+In general for _multiple linear regression_, however, we want to test whether all of 
+the regression coefficients are zero, i.e. whether $\beta_1 = \beta_2 = \beta_3 = 0$ 
+in this case. Hence, we would test the null hypothesis that 
+$$H_0: \beta_1 = \beta_2 = \beta_3 = 0$$ 
+versus the _alternative hypothesis_ that 
+$$H_1: At\: least\: one\: \beta_j\: is\: non-zero.$$ 
+This hypothesis would be conducted by calculating the $F-statistic$: 
+$$F = \frac{(TSS - RSS)/p}{RSS/(n-p-1)}$$
+(TSS is further explained in the sections below.) 
+  
+We can also test the hypothesis that a certain subset $q$ of the coefficients are 0. 
+For this, we would test the null hypothesis that
+$$H_0: \beta_{p-q+1} = \beta_{p-q+2} = \beta_{p} = 0$$
+where p is the number of predictors, which in this case is 3. 
+The $F-statistic$ would then be calculated by: 
+$$F = \frac{(RSS_0 - RSS)/q}{RSS/(n-p-1)}$$ 
+where $RSS_0$ is the residual sum of squares for a second model that uses all the 
+variables _except_those last $q$. 
+  
+## Evaluating Accuracy of the Model
+After conducting a hypothesis test, we will want to examine the extent to which 
+the model fits the data. There are three values that we can look at to assess this: 
+the _residual standard error_ ($RSE$), the $R^2$ value, and the $F-statistic$. 
+
+### Residual standard error (RSE)
+The RSE is an estimate of the standard deviation of errors, the distances from 
+each data point to its predicted value based on the linear model we fit. In other 
+words, it is the average amount that the response (`Sales`) will differ from 
+the true regression line and is given by the formula: 
+$$RSE = \sqrt{\frac{1}{n-2}RSS} = \sqrt{\frac{1}{n-2}\sum{(y_i - \hat{y_i})^2}}$$
+
+### $R^2$ value
+The $R^2$ statistic is, technically speaking, the proportion of variance explained 
+by our fitted model. Specifically, it measures the _proportion of variability in the response (`Sales`) that can be explained using the predictor (`TV`)_. 
+The closer $R^2$ is to 1, the greater the proportion of variability that is 
+explained. Its formula is given by: 
+
+$$ R^2 = \frac{(TSS - RSS)}{TSS} = 1 - \frac{RSS}{TSS}$$  
+Here, the _total sum of squares_, TSS = $\sum(y_i -\bar{y})^2)$ measures the total 
+variance in the response $Y$, and can be thought of as the amount of variability 
+that already exists in the response, even before we perform any regression analysis. 
+Thus, the R^2 value is a ratio of variability in $Y$ that can be explained by our 
+model to the variability that exists inherently in $Y$. 
+
+### $F$-statistic
+Following up on the earlier discussion of the $F-statistic$, it can be shown by linear 
+model assumptions that 
+$$E{RSS/(n-p-1)} = \sigma^2$$
+Provided that $H_0$ is true, 
+$$E{(TSS-RSS)/p} = \sigma^2$$
+Thus, when there is no relationship between the response and its predictors, we can 
+expect the $F-statistic$ to be close to or equal to 1. If $H_1$ is true, on the other 
+hand, then $E{(TSS-RSS)/p} > \sigma^2$, and we can expect F to be greater than 1. 
+
+
+
+
+
+## Results
+### Simple Linear Regression
+For the association between `Sales` and `TV`, I used R to calculate a regression 
+object, which produced the coefficient estimates for the model and necessary 
+calculations for performing a _t-test_. I also plotted the observed data against the line fitted by the regression object in order to obtain a visualization of this 
+analysis. The code is located in `code/scripts/regression-script.R" of the 
+repository for this paper, and is summarized by the following: 
+
+```{r, eval = FALSE}
+# Load necessary package(s) and data
+library(readr)
+advertising <- read.csv(file = "../data/Advertising.csv", row.names = 1)
+
+# Generate regression object
+sales_tv_reg <- lm(Sales ~ TV, data = advertising)
+
+# Generate summary
+sales_tv_sum <- summary(sales_tv_reg)
+
+# Generate plot
+plot(x = advertising$TV, y = advertising$Sales, 
+     xlab = "TV Advertising Budgets (in thousands of dollars)", 
+     ylab = "Sales (in thousands of product units)")
+abline(sales_tv_reg)
+```
+
+This generated the following outputs: 
+```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
+sales_tv <- xtable(sales_tv_sum$coefficients, 
+                      digits = c(0, 3, 3, 2, 4), 
+                      caption = c("Coefficient Estimates from the Simple Regression of Sales on TV"))
+print.xtable(sales_tv, comment = FALSE, caption.placement = "top")
+```
+
+```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+tv_sales <- readPNG("../images/scatterplot-tv-sales.png")
+grid.raster(tv_sales)
+```
+
+
+
+```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+radio_sales <- readPNG("../images/scatterplot-radio-sales.png")
+grid.raster(radio_sales)
+```
+
+```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+np_sales <- readPNG("../images/scatterplot-newspaper-sales.png")
+grid.raster(np_sales)
+```
+
+```{r, eval = TRUE, echo = FALSE, fig.width = 6, fig.height = 6, fig.align='center'}
+matrix <- readPNG("../images/scatterplot-matrix.png")
+grid.raster(matrix)
+```
+
+```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+residual <- readPNG("../images/residual-plot.png")
+grid.raster(residual)
+```
+
+```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+scale_location <- readPNG("../images/scale-location-plot.png")
+grid.raster(scale_location)
+```
+
+```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
+normal_qq <- readPNG("../images/normal-qq-plot.png")
+grid.raster(normal_qq)
+```
+
+
+
+
+```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
+sales_radio <- xtable(sales_radio_sum$coefficients, 
+                      digits = c(0, 3, 3, 2, 4), 
+                      caption = c("Coefficient Estimates from the Simple Regression of Sales on Radio"))
+print.xtable(sales_radio, comment = FALSE, caption.placement = "top")
+```
+
+```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
+sales_newspaper <- xtable(sales_np_sum$coefficients, 
+                      digits = c(0, 3, 3, 2, 4), 
+                      caption = c("Coefficient Estimates from the Simple Regression of Sales on Newspaper"))
+print.xtable(sales_newspaper, comment = FALSE, caption.placement = "top")
+```
+
+```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
+multi <- xtable(multi_sum$coefficients, 
+                      digits = c(0, 3, 3, 2, 4), 
+                      caption = c("Least Squares Coefficient Estimates from the Multiple Linear Regression of Sales on TV, Radio, and Newspaper"))
+print.xtable(sales_radio, comment = FALSE, caption.placement = "top")
+```
+
+```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
+cor_table <- xtable(adv_cor, 
+                    caption = "Correlation Matrix")
+print.xtable(cor_table, comment = FALSE, caption.placement = "top")
+```
+
+## Conclusions
