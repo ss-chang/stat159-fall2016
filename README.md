@@ -9,7 +9,8 @@ that is paired with the textbook, and contains data on product sales in over two
 hundred different markets along with the advertising budgets for the product in 
 each market by different mediums: `TV`, `Radio`, and `Newspaper`.  
   
-The file structure for this repository is as follows: 
+The file structure for this repository is as follows:  
+  
     .gitignore
     README.md
     LICENSE
