@@ -53,3 +53,8 @@ To recreate this analysis and its accompanying report in a local directory, clon
 repository and cd into the stat159-fall2016 directory from bash. Then type 
 `git branch hw03` to switch from the `master` branch to `hw03`. Then, type `make` to 
 create the output report.pdf file. 
+  
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This media content in this repository is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.Attribution-NonCommercial-ShareAlike 4.0 International License</a>.  
+The code content is licensed under an MIT License detailed in the LICENSE file. 
+
+The author, Shannon Chang, may be contacted at sschang@berkeley.edu.

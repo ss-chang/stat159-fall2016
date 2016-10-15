@@ -12,6 +12,7 @@ library(grid)
 library(gridExtra)
 load("../data/regression.RData")
 load("../data/correlation-matrix.RData")
+source("../code/functions/regression-functions.R")
 ```
 
 
@@ -82,6 +83,12 @@ grid.arrange(np,
              sales, 
              ncol = 2)
 ```
+  
+A scatterplot matrix for the entire `Advertising.csv` dataset is shown below:  
+```{r, eval = TRUE, echo = FALSE, fig.width = 6, fig.height = 6, fig.align='center'}
+matrix <- readPNG("../images/scatterplot-matrix.png")
+grid.raster(matrix)
+```
 
 
 
@@ -91,10 +98,11 @@ grid.arrange(np,
 ## Setting Up a Model
 To examine the association between `Sales` and `TV`, `Radio`, and `Newspaper`, whether 
 individually or altogether, we model the relationship by _linear regression_. For the 
-association with `Sales` and the advertising budget for each medium, we would model the 
-relationship by _simple linear regression_. For the association between `Sales` and 
-all three mediums, we would model the relationship by _multiple linear regression_. 
-
+association with `Sales` and the advertising budget for each medium, we would model 
+the relationship by _simple linear regression_. For the association between `Sales` 
+and all three mediums, we would model the relationship by 
+_multiple linear regression_.  
+  
 ### Simple Linear Regression 
 This method involves predicting a quantitative response $Y$, based on the predictor 
 variable $X$. For the association between `Sales` and the advertising budget for each 
@@ -104,7 +112,7 @@ $$Sales = \beta_0 + \beta_1Radio$$
 $$Sales = \beta_0 + \beta_1Newspaper$$  
 Here, Here, $\beta_0$ represents the intercept of the linear model while $\beta_1$ 
 represents the slope.  
-  
+   
 Since all $\beta_0$ and $\beta_1$ are unknown for each association, we would need to 
 calculate estimates for the their coefficients instead. In a visual sense, we would 
 want to graph all the data for `TV` and `Sales` and fit a line 
@@ -123,7 +131,7 @@ $$\hat{\beta_0} = \bar{y} - \hat{\beta_1}\bar{x}$$
 $$\hat{\beta_1} = \frac{\sum(x_i-\bar{x})(y_i - \bar{y})}{\sum(x_i-\bar{x})^2}$$ 
 Here, $\bar{x}$ is the mean of `TV` (or `Radio` or `Newspaper`), while $\bar{y}$ 
 is the mean of `Sales`. 
-
+  
 To evaluate the accuracy of these estimates, we start by calculating standard errors 
 of the standard means. We can then use these standard errors to perform 
 _hypothesis tests_ on the estimates. Thus, we would be testing the _null hypothesis_ 
@@ -276,29 +284,124 @@ sales_tv <- xtable(sales_tv_sum$coefficients,
                       caption = c("Coefficient Estimates from the Simple Regression of Sales on TV"))
 print.xtable(sales_tv, comment = FALSE, caption.placement = "top")
 ```
-
+  
 ```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
 tv_sales <- readPNG("../images/scatterplot-tv-sales.png")
 grid.raster(tv_sales)
 ```
-
-
-
+From **Table 1**, we can see that the coefficient estimate for $\beta_0$ is 
+`r round(sales_tv_sum$coefficients[1], digits = 3)`, while $\beta_1$ is 
+`r round(sales_tv_sum$coefficients[2], digits = 3)`. The p-value associated with 
+`TV` is `r round(sales_tv_sum$coefficients[8], digits = 4)`, which is less than .01 
+and .05--meaning that the coefficient estimate for `TV` is statistically significant 
+at the 1% and 5% level. This means that we can reject the null hypothesis that there 
+is no relationship between `Sales` and `TV`. 
+  
+Using the coding process detailed above, I was further able to produce analysis 
+outputs for the association between `Sales` and `Radio` and `Sales` and `Newspaper`: 
+```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
+sales_radio <- xtable(sales_radio_sum$coefficients, 
+                      digits = c(0, 3, 3, 2, 4), 
+                      caption = c("Coefficient Estimates from the Simple Regression of Sales on Radio"))
+print.xtable(sales_radio, comment = FALSE, caption.placement = "top")
+```
+  
 ```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
 radio_sales <- readPNG("../images/scatterplot-radio-sales.png")
 grid.raster(radio_sales)
 ```
-
+  
+From **Table 2**, we can see that the coefficient estimate for $\beta_0$ is 
+`r round(sales_radio_sum$coefficients[1], digits = 3)`, while $\beta_1$ is 
+`r round(sales_radio_sum$coefficients[2], digits = 3)`. The p-value associated with 
+`Radio` is `r round(sales_radio_sum$coefficients[8], digits = 4)`, which is less than 
+.01 and .05--meaning that the coefficient estimate for `TV` is statistically 
+significant at the 1% and 5% level. This means that we can reject the null hypothesis 
+that there is no relationship between `Sales` and `Radio`.  
+  
+```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
+sales_newspaper <- xtable(sales_np_sum$coefficients, 
+                      digits = c(0, 3, 3, 2, 4), 
+                      caption = c("Coefficient Estimates from the Simple Regression of Sales on Newspaper"))
+print.xtable(sales_newspaper, comment = FALSE, caption.placement = "top")
+```
+  
 ```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
 np_sales <- readPNG("../images/scatterplot-newspaper-sales.png")
 grid.raster(np_sales)
 ```
+  
+From **Table 3**, we can see that the coefficient estimate for $\beta_0$ is 
+`r round(sales_np_sum$coefficients[1], digits = 3)`, while $\beta_1$ is 
+`r round(sales_np_sum$coefficients[2], digits = 3)`. The p-value associated with 
+`Newspaper` is `r round(sales_np_sum$coefficients[8], digits = 4)`, which is less 
+than .01 and .05--meaning that the coefficient estimate for `TV` is statistically 
+significant at the 1% and 5% level. This means that we can reject the null hypothesis 
+that there is no relationship between `Sales` and `Newspaper`. 
+  
+## Multiple Linear Regression 
+For the combined association between `Sales` and `TV` and `Radio` and `Newspaper`, 
+I first used R to calculate the a correlation matrix to get a very general overview 
+of the relationship betwen all four variables. (Keep in mind, however, the old 
+saying that "correlation does not imply causation.") I then calculated a regression 
+object, which produced the coefficient estimates for the model and necessary 
+calculations for performing a _t-test_. I also generated diagnostic plots of the 
+regression, which a plot of the `Sales` residuals against fitted values, a 
+Scale-Location plot of squared residuals against fitted values, and a normal Q-Q 
+plot. The code is located in `code/scripts/regression-script.R" of the 
+repository for this paper, and is summarized by the following:
 
-```{r, eval = TRUE, echo = FALSE, fig.width = 6, fig.height = 6, fig.align='center'}
-matrix <- readPNG("../images/scatterplot-matrix.png")
-grid.raster(matrix)
+```{r, eval = FALSE}
+# Load necessary package(s) and data
+library(readr)
+advertising <- read.csv(file = "../data/Advertising.csv", row.names = 1)
+
+# Generate correlation matrix
+adv_cor <- cor(advertising, use = "all.obs")
+
+# Generate regression object
+multi_reg <- lm(Sales ~ TV + Radio + Newspaper, data = advertising)
+
+# Generate summary
+multi_sum <- summary(multi_reg)
+
+# Generate plots
+# Residual plot
+plot(multi_reg, which = c(1))
+
+# Scale location plot
+plot(multi_reg, which = c(3))
+
+# Normal qq plot
+plot(multi_reg, which = c(2))
 ```
+  
+This generated the following outputs:  
+```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
+cor_table <- xtable(adv_cor, 
+                    caption = "Correlation Matrix")
+print.xtable(cor_table, comment = FALSE, caption.placement = "top")
+```
+  
+```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
+multi <- xtable(multi_sum$coefficients, 
+                      digits = c(0, 3, 3, 2, 4), 
+                      caption = c("Least Squares Coefficient Estimates from the Multiple Linear Regression of Sales on TV, Radio, and Newspaper"))
+print.xtable(multi, comment = FALSE, caption.placement = "top")
+```
+  
+```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
+rse <- round(residual_std_error(multi_reg), digits = 2)
+r2 <- round(r_squared(multi_reg), digits = 3)
+f_stat <- round(f_statistic(multi_reg), digits = 0)
 
+q_ind <- data.frame("Quantity" = c("Residual standard error", "R^2", "F-statistic"),
+                    "Value" = c(rse, r2, f_stat))
+q_tab <- xtable(q_ind, 
+                caption = c("Quality Indices for the Multiple Linear Regression of Sales on TV, Radio, and Newspaper"))
+print.xtable(q_tab, comment = FALSE, caption.placement = "top")
+```
+  
 ```{r, eval = TRUE, echo = FALSE, fig.width = 4, fig.height = 4, fig.align='center'}
 residual <- readPNG("../images/residual-plot.png")
 grid.raster(residual)
@@ -314,34 +417,49 @@ normal_qq <- readPNG("../images/normal-qq-plot.png")
 grid.raster(normal_qq)
 ```
 
+From **Table 5**, we can see that the coefficient estimate for $\beta_0$ is 
+`r round(multi_sum$coefficients[1], digits = 3)`, $\beta_1$ is 
+`r round(multi_sum$coefficients[2], digits = 3)`, $\beta_2$ is 
+`r round(multi_sum$coefficients[3], digits = 3)`, and $\beta_3$ is 
+`r round(multi_sum$coefficients[4], digits = 3)`. The coefficient estimate for 
+`TV` is about the same, and still remains statistically significant at the 1% and 
+5% level, since its p-value is `r round(sales_np_sum$coefficients[14], digits = 4)`
+and therefore less than .01 and .05. The coefficient estimates for `Radio` and 
+`Newspaper`, however, have changed quite a bit from their estimated values in 
+the simple linear regression. `Radio` remains statistically significant at the 1% and 
+5% level, since its p-value is `r round(sales_np_sum$coefficients[15], digits = 4)`
+and therefore less than .01 and .05. `Newspaper`, however, is no longer statstically 
+significant because its its p-value is 
+`r round(sales_np_sum$coefficients[16], digits = 4)` and therefore drastically 
+higher than .01 and .05.  
+  
+From **Table 6**, we can see that on average, the observed 
+`Sales` data differs from its corresponding predicted value from the multiple linear 
+regression model by `r round(residual_std_error(multi_reg), digits = 2)`, which 
+translates into a difference of 
+`r round(residual_std_error(multi_reg), digits = 2)*1000` units of product sold. 
+The $R^2$ value tells us that `r round(r_squared(multi_reg), digits = 3)*100`% 
+of the variability in `Sales` is explained by our model--which provides evidence
+that the model fits the data well. The $F-statistic$ of 
+`r round(f_statistic(multi_reg), digits = 0)` is not close to 1 at all, we can 
+reject the null hypothesis that all there is no relationship between `Sales` and 
+`TV`, `Radio`, and `Newspaper`.
 
 
 
-```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
-sales_radio <- xtable(sales_radio_sum$coefficients, 
-                      digits = c(0, 3, 3, 2, 4), 
-                      caption = c("Coefficient Estimates from the Simple Regression of Sales on Radio"))
-print.xtable(sales_radio, comment = FALSE, caption.placement = "top")
-```
 
-```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
-sales_newspaper <- xtable(sales_np_sum$coefficients, 
-                      digits = c(0, 3, 3, 2, 4), 
-                      caption = c("Coefficient Estimates from the Simple Regression of Sales on Newspaper"))
-print.xtable(sales_newspaper, comment = FALSE, caption.placement = "top")
-```
-
-```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
-multi <- xtable(multi_sum$coefficients, 
-                      digits = c(0, 3, 3, 2, 4), 
-                      caption = c("Least Squares Coefficient Estimates from the Multiple Linear Regression of Sales on TV, Radio, and Newspaper"))
-print.xtable(sales_radio, comment = FALSE, caption.placement = "top")
-```
-
-```{r, eval = TRUE, echo = FALSE, results = "asis", message = FALSE}
-cor_table <- xtable(adv_cor, 
-                    caption = "Correlation Matrix")
-print.xtable(cor_table, comment = FALSE, caption.placement = "top")
-```
 
 ## Conclusions
+Overall, we can see that there is indeed a difference in results when it comes 
+to performing 3 simple linear regressions versus 1 multiple linear regression to 
+capture the relationship between `Sales` and `TV`, `Radio`, and `Newspaper`. 
+In fact, we were able to see that the coefficient estimate for `Radio` changed 
+quite a bit through multiple linear regression and that the coefficient estimate 
+for `Newspaper` was no longer statistically significant. While this casts some 
+doubt on the usefulness of `Radio`, and `Newspaper` in predicting `Sales` (the 
+response), the fact that the coefficient estimate for `TV` changed very little 
+between models and remained statistically significant suggests that there is 
+at least one useful predictor in the model. We also saw from the calculated 
+$R^2$ value of `r round(r_squared(multi_reg), digits = 3)` that the multiple 
+linear regression model does, indeed, fit this dataset well. The fact that it 
+is relatively close to 100% suggests that the prediction is reasonably accurate. 
