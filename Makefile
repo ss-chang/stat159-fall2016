@@ -8,7 +8,7 @@ all: eda regression report
 
 # Download Advertising.csv
 data : 
-	cd code/data; curl http://www-bcf.usc.edu/~gareth/ISL/Advertising.csv >> Advertising.csv
+	cd data; curl http://www-bcf.usc.edu/~gareth/ISL/Advertising.csv >> Advertising.csv
 
 # Perform exploratory data analysis
 eda : 
@@ -28,10 +28,10 @@ tests:
 
 # Generate report.pdf file
 report:
-	cd code/report; Rscript -e "library(rmarkdown); render('report.Rmd', 'pdf_document')"
+	cd report; Rscript -e "library(rmarkdown); render('report.Rmd', 'pdf_document')"
 
 # Clean output file
 clean:
-	cd code/report; rm -f report.pdf
+	cd report; rm -f report.pdf
 
 
