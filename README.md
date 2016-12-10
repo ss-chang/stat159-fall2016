@@ -1,3 +1,5 @@
+# stat159-fall2016-hw03
+
 This is the public repository that holds Shannon Chang's Homework 3 for Stat 159, taken 
 Fall 2016 at UC Berkeley. This homework assignment deals with a reproduction of the 
 multiple linear regression detailed Chapter 3 of Gareth James, Daniela Witten, Trevor 
